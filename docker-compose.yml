@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  issuance-service:
+    build: ./backend/issuance-service
+    container_name: issuance-service
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./shared:/app/shared
+    networks:
+      - kube-net
+
+  verification-service:
+    build: ./backend/verification-service
+    container_name: verification-service
+    ports:
+      - "3002:3002"
+    depends_on:
+      - issuance-service
+    volumes:
+      - ./shared:/app/shared
+    networks:
+      - kube-net
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend-app
+    ports:
+      - "5173:80"
+    depends_on:
+      - issuance-service
+      - verification-service
+    networks:
+      - kube-net
+
+networks:
+  kube-net:
+    driver: bridge
